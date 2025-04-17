@@ -10,11 +10,14 @@ useEffect(() => {
   const fetchBusinesses = async () => {
     try {
       const token = localStorage.getItem("token"); // make sure token is stored here
-      const response = await axios.get("http://localhost:5000/business/allBusinesses", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/business/allBusinesses`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log("Fetched businesses:", response.data); // <-- See what's returned
       setBusinesses(response.data.businesses);
     } catch (error) {

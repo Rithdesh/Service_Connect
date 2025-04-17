@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const BusinessCreate = () => {
   const [businesses, setBusinesses] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -15,66 +14,67 @@ const BusinessCreate = () => {
     name: "",
     phone: "",
     address: "",
-    services: [""],
+    services: [],
   });
-  const [showCreateModal, setShowCreateModal] = useState(false); // New state for showing create modal
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [createFormData, setCreateFormData] = useState({
     name: "",
     phone: "",
     address: "",
-    services: [''],
+    services: [""],
   });
 
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Fetch all businesses for the current user
   const fetchBusinesses = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/business/all", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/business/all`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setBusinesses(res.data.businesses);
     } catch (err) {
       console.error("Error fetching businesses:", err);
     }
   };
 
-  // Confirm business deletion
   const confirmDelete = (business) => {
     setSelectedBusiness(business);
     setShowModal(true);
   };
 
-  // Handle edit button click (open the edit modal)
   const handleEditClick = (business) => {
     setEditingBusiness(business);
     setEditFormData({
       name: business.name,
       address: business.address,
-      services: [""], // Convert array to comma-separated string
+      services: business.services.length ? business.services : [""],
     });
   };
 
-  // Handle change in the edit form
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle the submission of the edit form (save the updated business data)
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
-    // Convert services string to array before sending
     const updatedData = {
-      ...editFormData,
-      services: editFormData.services,
+      ...editingBusiness,
+      name: editFormData.name,
+      address: editFormData.address,
+      services: editFormData.services.filter((s) => s.trim() !== ""),
     };
 
     try {
       const res = await axios.put(
-        `http://localhost:5000/business/update/${editingBusiness._id}`,
+        `${import.meta.env.VITE_API_URL}/business/update/${
+          editingBusiness._id
+        }`,
         updatedData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -85,18 +85,19 @@ const BusinessCreate = () => {
       setBusinesses((prev) =>
         prev.map((b) => (b._id === editingBusiness._id ? res.data.business : b))
       );
-      setEditingBusiness(null); // Close modal after success
+      setEditingBusiness(null);
     } catch (error) {
       toast.error("Update failed");
     }
   };
 
-  // Handle business deletion
   const handleDelete = async () => {
     if (!selectedBusiness) return;
     try {
       await axios.delete(
-        `http://localhost:5000/business/delete/${selectedBusiness._id}`,
+        `${import.meta.env.VITE_API_URL}/business/delete/${
+          selectedBusiness._id
+        }`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -111,19 +112,18 @@ const BusinessCreate = () => {
     }
   };
 
-const handleEditServiceChange = (index, value) => {
-  const updatedServices = [...editFormData.services];
-  updatedServices[index] = value;
-  setEditFormData({ ...editFormData, services: updatedServices });
-};
+  const handleEditServiceChange = (index, value) => {
+    const updatedServices = [...editFormData.services];
+    updatedServices[index] = value;
+    setEditFormData({ ...editFormData, services: updatedServices });
+  };
 
-const handleCreateServiceChange = (index, value) => {
-  const updatedServices = [...createFormData.services];
-  updatedServices[index] = value;
-  setCreateFormData({ ...createFormData, services: updatedServices });
-};
+  const handleCreateServiceChange = (index, value) => {
+    const updatedServices = [...createFormData.services];
+    updatedServices[index] = value;
+    setCreateFormData({ ...createFormData, services: updatedServices });
+  };
 
-  // Add a new service input field (for edit modal)
   const addService = () => {
     setEditFormData({
       ...editFormData,
@@ -131,46 +131,37 @@ const handleCreateServiceChange = (index, value) => {
     });
   };
 
-  // Remove a service input field (for edit modal)
   const removeService = (index) => {
     const updatedServices = [...editFormData.services];
     updatedServices.splice(index, 1);
     setEditFormData({ ...editFormData, services: updatedServices });
   };
 
-  // Handle change in the create business form (new business creation modal)
   const handleCreateChange = (e) => {
     const { name, value } = e.target;
     setCreateFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-
-
-
-
   const handleCreateClick = () => {
     setCreateFormData({
       name: "",
       address: "",
-      services: [""], // initialize with one empty service
+      services: [""],
     });
     setShowCreateModal(true);
   };
 
-
-  // Handle submission of the create business form
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
 
-    // Convert services string to array before sending
     const newBusinessData = {
       ...createFormData,
-      services: createFormData.services,
+      services: createFormData.services.filter((s) => s.trim() !== ""),
     };
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/business/create",
+        `${import.meta.env.VITE_API_URL}/business/create`,
         newBusinessData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -179,13 +170,12 @@ const handleCreateServiceChange = (index, value) => {
 
       toast.success("Business created");
       setBusinesses((prev) => [...prev, res.data.business]);
-      setShowCreateModal(false); // Close the create business modal after success
+      setShowCreateModal(false);
     } catch (error) {
       toast.error("Business creation failed");
     }
   };
 
-  // Add a new service input field (for create modal)
   const addCreateService = () => {
     setCreateFormData({
       ...createFormData,
@@ -193,7 +183,6 @@ const handleCreateServiceChange = (index, value) => {
     });
   };
 
-  // Remove a service input field (for create modal)
   const removeCreateService = (index) => {
     const updatedServices = [...createFormData.services];
     updatedServices.splice(index, 1);
@@ -267,6 +256,9 @@ const handleCreateServiceChange = (index, value) => {
             </div>
           )}
         </div>
+
+        {/* Toast Container */}
+        <ToastContainer />
 
         {/* Delete Modal */}
         {showModal && (
@@ -447,4 +439,5 @@ const handleCreateServiceChange = (index, value) => {
     </>
   );
 };
+
 export default BusinessCreate;

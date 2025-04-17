@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import toast CSS
 import Navbar from "./Navbar";
 
+
 const AppointmentBook = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const AppointmentBook = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:5000/appointment/book",
+        `${import.meta.env.VITE_API_URL}/appointment/book`,
         {
           ...formData,
           businessName: business.name,

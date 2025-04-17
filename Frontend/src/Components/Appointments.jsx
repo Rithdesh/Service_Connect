@@ -21,9 +21,12 @@ const Appointment = () => {
 
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/appointment/get", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/appointment/get`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       console.log("Fetched appointments:", res.data);
       setAppointments(res.data);
     } catch (error) {
@@ -35,33 +38,30 @@ const Appointment = () => {
     setAppointmentToDelete(id);
   };
 
-
-const confirmDeleteAppointment = async () => {
-  try {
-    const res = await axios.delete(
-      `http://localhost:5000/appointment/delete/${appointmentToDelete}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    if (res.status === 200) {
-      toast.success("Appointment deleted successfully!");
-      setAppointments((prev) =>
-        prev.filter((a) => a._id !== appointmentToDelete)
+  const confirmDeleteAppointment = async () => {
+    try {
+      const res = await axios.delete(
+        `${import.meta.env.VITE_API_URL }/appointment/delete/${appointmentToDelete}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
+
+      if (res.status === 200) {
+        toast.success("Appointment deleted successfully!");
+        setAppointments((prev) =>
+          prev.filter((a) => a._id !== appointmentToDelete)
+        );
+        setAppointmentToDelete(null);
+      } else {
+        throw new Error("Failed to delete appointment");
+      }
+    } catch (error) {
+      console.error("Delete failed", error);
+      toast.error("Failed to delete appointment");
       setAppointmentToDelete(null);
-    } else {
-      throw new Error("Failed to delete appointment");
     }
-  } catch (error) {
-    console.error("Delete failed", error);
-    toast.error("Failed to delete appointment");
-    setAppointmentToDelete(null);
-  }
-};
-
-
+  };
 
   const handleEditClick = (appointment) => {
     setEditingAppointment(appointment);
@@ -79,7 +79,7 @@ const confirmDeleteAppointment = async () => {
     e.preventDefault();
     try {
       await axios.put(
-        `http://localhost:5000/appointment/update/${editingAppointment._id}`,
+        `${import.meta.env.VITE_API_URL}/appointment/update/${editingAppointment._id}`,
         { ...editForm },
         { headers: { Authorization: `Bearer ${token}` } }
       );
